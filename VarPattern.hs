@@ -1,7 +1,20 @@
 
 module VarPattern where
 
+type Pattern a b = (a -> b) -> (a -> b)
 
+pcase :: [Pattern a b] -> Pattern a b
+pcase = foldr (.) id
+
+f c = \a -> case a of
+             [x] -> x
+             _   -> c a
+
+g c = \ a -> case a of 
+              (x : 1 : []) -> x
+              _   -> c a
+ 
+{-
 data Match a b = Match (a -> b)
                | NoMatch
              
@@ -46,3 +59,4 @@ pcase cs d a = case (foldr comp (const NoMatch) cs) a of
 
 -- h :: (a -/> b) -> Pattern a b
 -- h = 
+-}
