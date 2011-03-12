@@ -1,19 +1,31 @@
-
+{-# LANGUAGE TypeSynonymInstances #-}
 module VarPattern where
 
-type Pattern a b = (a -> b) -> (a -> b)
+import Data.Monoid
 
+newtype Pattern a b = Pat { unPat:: (a -> b) -> (a -> b) }
+
+runPat :: Pattern a b -> (a -> b) -> (a -> b)
+runPat = unPat
+
+instance Monoid (Pattern a b) where
+    mempty = Pat id
+    mappend (Pat g) (Pat f) = Pat $ g . f
+         
 pcase :: [Pattern a b] -> Pattern a b
-pcase = foldr (.) id
+pcase = mconcat
 
-f c = \a -> case a of
+f = Pat $ \c a -> case a of
              [x] -> x
              _   -> c a
 
-g c = \ a -> case a of 
-              (x : 1 : []) -> x
+g = Pat $ \c a -> case a of 
+              (1 : x : []) -> x
               _   -> c a
- 
+
+test = runPat (pcase [f,g]) head [1,3] 
+
+
 {-
 data Match a b = Match (a -> b)
                | NoMatch
